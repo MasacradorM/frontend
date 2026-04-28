@@ -14,6 +14,7 @@ export default function Products() {
   };
 
   const handleSubmit = async () => {
+    if (!form.name || !form.price) return;
     if (editId) {
       await updateProduct(editId, form);
       setEditId(null);
@@ -36,25 +37,48 @@ export default function Products() {
 
   return (
     <div>
-      <h2>Products</h2>
-      <input placeholder="Name" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
-      <input placeholder="Price" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} />
-      <button onClick={handleSubmit}>{editId ? 'Update' : 'Create'}</button>
+      <div className="header">
+        <h2>Products</h2>
+        <p>Manage all products in the database</p>
+      </div>
 
-      <table>
-        <thead><tr><th>ID</th><th>Name</th><th>Price</th><th>Actions</th></tr></thead>
-        <tbody>
-          {products.map(p => (
-            <tr key={p.id}>
-              <td>{p.id}</td><td>{p.name}</td><td>{p.price}</td>
-              <td>
-                <button onClick={() => handleEdit(p)}>Edit</button>
-                <button onClick={() => handleDelete(p.id)}>Delete</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <div className="form-card">
+        <div className="field">
+          <label>Name</label>
+          <input placeholder="Product name" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
+        </div>
+        <div className="field">
+          <label>Price</label>
+          <input placeholder="0.00" type="number" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} />
+        </div>
+        <button className="btn" onClick={handleSubmit}>{editId ? 'Update' : 'Create'}</button>
+        {editId && <button className="btn-secondary" onClick={() => { setEditId(null); setForm({ name: '', price: '' }); }}>Cancel</button>}
+      </div>
+
+      <div className="table-card">
+        <table>
+          <thead>
+            <tr><th>ID</th><th>Name</th><th>Price</th><th>Actions</th></tr>
+          </thead>
+          <tbody>
+            {products.length === 0 ? (
+              <tr><td colSpan="4" className="empty">No products found</td></tr>
+            ) : products.map(p => (
+              <tr key={p.id}>
+                <td><span className="badge">#{p.id}</span></td>
+                <td>{p.name}</td>
+                <td>${Number(p.price).toFixed(2)}</td>
+                <td>
+                  <div className="actions">
+                    <button className="btn-sm" onClick={() => handleEdit(p)}>Edit</button>
+                    <button className="btn-danger" onClick={() => handleDelete(p.id)}>Delete</button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
