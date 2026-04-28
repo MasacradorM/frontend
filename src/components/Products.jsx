@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { getProducts, createProduct, updateProduct, deleteProduct } from '../api/api';
 
 export default function Products() {
@@ -6,12 +6,12 @@ export default function Products() {
   const [form, setForm] = useState({ name: '', price: '' });
   const [editId, setEditId] = useState(null);
 
-  useEffect(() => { fetchProducts(); }, []);
-
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     const res = await getProducts();
     setProducts(res.data);
-  };
+  }, []);
+
+  useEffect(() => { fetchProducts(); }, [fetchProducts]);
 
   const handleSubmit = async () => {
     if (!form.name || !form.price) return;
@@ -41,7 +41,6 @@ export default function Products() {
         <h2>Products</h2>
         <p>Manage all products in the database</p>
       </div>
-
       <div className="form-card">
         <div className="field">
           <label>Name</label>
@@ -54,12 +53,9 @@ export default function Products() {
         <button className="btn" onClick={handleSubmit}>{editId ? 'Update' : 'Create'}</button>
         {editId && <button className="btn-secondary" onClick={() => { setEditId(null); setForm({ name: '', price: '' }); }}>Cancel</button>}
       </div>
-
       <div className="table-card">
         <table>
-          <thead>
-            <tr><th>ID</th><th>Name</th><th>Price</th><th>Actions</th></tr>
-          </thead>
+          <thead><tr><th>ID</th><th>Name</th><th>Price</th><th>Actions</th></tr></thead>
           <tbody>
             {products.length === 0 ? (
               <tr><td colSpan="4" className="empty">No products found</td></tr>
@@ -68,12 +64,10 @@ export default function Products() {
                 <td><span className="badge">#{p.id}</span></td>
                 <td>{p.name}</td>
                 <td>${Number(p.price).toFixed(2)}</td>
-                <td>
-                  <div className="actions">
-                    <button className="btn-sm" onClick={() => handleEdit(p)}>Edit</button>
-                    <button className="btn-danger" onClick={() => handleDelete(p.id)}>Delete</button>
-                  </div>
-                </td>
+                <td><div className="actions">
+                  <button className="btn-sm" onClick={() => handleEdit(p)}>Edit</button>
+                  <button className="btn-danger" onClick={() => handleDelete(p.id)}>Delete</button>
+                </div></td>
               </tr>
             ))}
           </tbody>

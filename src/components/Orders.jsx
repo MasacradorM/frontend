@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { getOrders, createOrder, updateOrder, deleteOrder, getUsers, getProducts } from '../api/api';
 
 export default function Orders() {
@@ -8,16 +8,16 @@ export default function Orders() {
   const [form, setForm] = useState({ user: { id: '' }, product: { id: '' }, quantity: '' });
   const [editId, setEditId] = useState(null);
 
+  const fetchOrders = useCallback(async () => {
+    const res = await getOrders();
+    setOrders(res.data);
+  }, []);
+
   useEffect(() => {
     fetchOrders();
     getUsers().then(r => setUsers(r.data));
     getProducts().then(r => setProducts(r.data));
-  }, []);
-
-  const fetchOrders = async () => {
-    const res = await getOrders();
-    setOrders(res.data);
-  };
+  }, [fetchOrders]);
 
   const handleSubmit = async () => {
     if (!form.user.id || !form.product.id || !form.quantity) return;
@@ -47,7 +47,6 @@ export default function Orders() {
         <h2>Orders</h2>
         <p>Manage all orders in the database</p>
       </div>
-
       <div className="form-card">
         <div className="field">
           <label>User</label>
@@ -70,12 +69,9 @@ export default function Orders() {
         <button className="btn" onClick={handleSubmit}>{editId ? 'Update' : 'Create'}</button>
         {editId && <button className="btn-secondary" onClick={() => { setEditId(null); setForm({ user: { id: '' }, product: { id: '' }, quantity: '' }); }}>Cancel</button>}
       </div>
-
       <div className="table-card">
         <table>
-          <thead>
-            <tr><th>ID</th><th>User</th><th>Product</th><th>Quantity</th><th>Actions</th></tr>
-          </thead>
+          <thead><tr><th>ID</th><th>User</th><th>Product</th><th>Quantity</th><th>Actions</th></tr></thead>
           <tbody>
             {orders.length === 0 ? (
               <tr><td colSpan="5" className="empty">No orders found</td></tr>
@@ -85,12 +81,10 @@ export default function Orders() {
                 <td>{o.user?.name}</td>
                 <td>{o.product?.name}</td>
                 <td>{o.quantity}</td>
-                <td>
-                  <div className="actions">
-                    <button className="btn-sm" onClick={() => handleEdit(o)}>Edit</button>
-                    <button className="btn-danger" onClick={() => handleDelete(o.id)}>Delete</button>
-                  </div>
-                </td>
+                <td><div className="actions">
+                  <button className="btn-sm" onClick={() => handleEdit(o)}>Edit</button>
+                  <button className="btn-danger" onClick={() => handleDelete(o.id)}>Delete</button>
+                </div></td>
               </tr>
             ))}
           </tbody>
